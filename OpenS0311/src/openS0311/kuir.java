@@ -11,5 +11,8 @@ public class kuir {
 		else if(args[0].equals("-k")) {
 			makeKeyword mkKey = new makeKeyword(args[1]);
 		}
+		else if(args[0].equals("-i")) {
+			indexer mkMap = new indexer(args[1]);
+		}
 	}
 }
