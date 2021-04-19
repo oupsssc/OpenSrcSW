@@ -44,7 +44,8 @@ public class searcher {
 		}
 		for(int i=list.size()-1;i>list.size()-4;i--) {
 			String[] buf = list.get(i).getKey().split(":");
-			System.out.println(buf[0]);
+			if(list.get(i).getValue()!=0)
+				System.out.println(buf[0]+" "+buf[1]);
 		}
 
 	}
@@ -137,9 +138,107 @@ public class searcher {
 	}
 	
 	public HashMap<String,Double> CalcSim(String postFile, String query) {
-		
-		HashMap <String,Double>hsMap = new HashMap<String,Double>();
-		return hsMap;
-
+		try {
+			HashMap<String, Double> InPMap = InnerProduct(postFile, query);
+			List<Entry<String, Double>> list = new ArrayList<>(InPMap.entrySet());
+			list.sort(Entry.comparingByValue());
+			for(int i=0;i<list.size()-1;i++) {
+				for(int j=i;j<list.size()-1;j++) {
+					double tmp1=list.get(j).getValue();
+					double tmp2=list.get(j+1).getValue();
+					if(tmp1==tmp2) {
+						String[] buf1 = list.get(j).getKey().split(":");
+						String[] buf2 = list.get(j+1).getKey().split(":");
+						if(Integer.parseInt(buf1[1])<Integer.parseInt(buf2[1])){
+							Collections.swap(list,j,j+1);
+						}
+					}
+				}	
+			}
+			
+			String que = query;
+			KeywordExtractor ke = new KeywordExtractor();
+			KeywordList kl = null;
+			Keyword kwrd = null;
+			kl = ke.extractKeyword(que, true);
+			String[] queName = new String[kl.size()];
+			int[] queWeight = new int[kl.size()];
+			for(int i=0;i<kl.size();i++) {
+				kwrd = kl.get(i);
+				queName[i]=kwrd.getString();	//단어이름
+				queWeight[i]=1;
+			}	
+			
+			FileInputStream filein = new FileInputStream(postFile);
+			ObjectInputStream obin = new ObjectInputStream(filein);
+			Object ob = obin.readObject();
+			obin.close();
+			HashMap hsmap = (HashMap) ob;
+			
+			HashMap<String,Double> tmpMap = new HashMap<String,Double>();
+			for(int i=0;i<list.size();i++) {	//각 문서별로
+				String[] buf1 = list.get(i).getKey().split(":");
+				tmpMap.put(list.get(i).getKey(),0.0);
+				for(int j=0;j<kl.size();j++) {	//query의 키워드가
+					if(hsmap.containsKey(queName[j])) {	//index.post에 있으면
+						ArrayList<String> value = (ArrayList<String>)hsmap.get(queName[j]);
+						for(String v:value) {
+							String[] buf = v.split(" ");		//id weight
+							if(Integer.parseInt(buf[0])==Integer.parseInt(buf1[1])) {	//id 
+								double tmp = tmpMap.get(list.get(i).getKey());
+								tmpMap.put(list.get(i).getKey(), tmp+ Math.pow(Double.parseDouble(buf[1]),2));
+							}
+						}
+					}
+				}
+				double tmp = tmpMap.get(list.get(i).getKey());
+				tmpMap.put(list.get(i).getKey(), Math.sqrt(tmp));
+			}
+			
+			double queDeno = 0.0; 
+			for(int j=0;j<kl.size();j++) {	//query의 키워드가
+				queDeno+=Math.pow((double)queWeight[j],2);
+			}
+			queDeno = Math.sqrt(queDeno);
+			HashMap <String,Double>simMap = new HashMap<String,Double>();
+			for(int i=0;i<list.size();i++) {	//각 문서별로
+				double idDeno = tmpMap.get(list.get(i).getKey());
+				double simi = list.get(i).getValue()/(idDeno*queDeno);
+				simi = Math.round(simi*100)/100.0;
+				simMap.put(list.get(i).getKey(),simi);
+			}
+			return simMap;
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		HashMap <String,Double>falseMap = new HashMap<String,Double>();
+		return falseMap;
 	}
 }
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
