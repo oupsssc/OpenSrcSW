@@ -83,12 +83,12 @@ public class indexer {
 					if(i!=0&&indexMap.containsKey(key)) {	//i가 첫번째일때는 중복아니므로 제외
 						//value의 리스트에 추가후 put
 						list=(ArrayList<String>) indexMap.get(key);
-						list.add(id_arr[i]+" "+w+" ");
+						list.add(id_arr[i]+" "+w);
 						indexMap.put(key, list);
 					}
 					else {
 						list=new ArrayList<String>();
-						list.add(id_arr[i]+" "+w+" ");
+						list.add(id_arr[i]+" "+w);
 						indexMap.put(key,list);
 					}
 				}	

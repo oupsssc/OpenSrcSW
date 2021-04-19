@@ -1,5 +1,6 @@
 package openS0311;
- 
+
+import java.util.Arrays;
 
 public class kuir {
 
