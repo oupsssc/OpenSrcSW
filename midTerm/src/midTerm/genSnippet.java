@@ -25,6 +25,10 @@ public class genSnippet {
 		lines[3]="초밥 라면 밥물 채소 소금";
 		lines[4]="초밥 종류 활어";
 		StringTokenizer st = new StringTokenizer(query," ");
+		while(st.hasMoreElements()) {
+			String key = st.nextToken().trim();
+			System.out.println(key);
+		}	
 		
 	}
 	
